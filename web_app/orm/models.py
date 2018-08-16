@@ -13,6 +13,7 @@ from django.contrib.auth.models import Group, User
 
 from django.dispatch import receiver
 from django.db.models.signals import pre_save
+from django.db import models
 
 from rest_framework import serializers 
 
@@ -29,8 +30,8 @@ class TvStoreUnit(models.Model):
     serial_nr       = models.CharField(verbose_name=_('serial_nr'), max_length=200, unique=True, null=False, blank=False, db_index=True, default=DEFAULT_UNIT_SERIAL_NR)
     creation_date   = models.DateTimeField(default=timezone.now)
     expire_date     = models.DateTimeField(null=True, blank=True)
-    group           = models.ForeignKey(Group, verbose_name=_('group'), null=True)
-    user            = models.ForeignKey(User,  verbose_name=_('user'),  null=True)
+    group           = models.ForeignKey(Group, verbose_name=_('group'), null=True, on_delete=models.SET_NULL)
+    user            = models.ForeignKey(User,  verbose_name=_('user'),  null=True, on_delete=models.SET_NULL)
     js_attributes   = models.TextField(_(u'js_attributes'), null=False, blank=True)
     
 
@@ -54,12 +55,12 @@ class TvStoreContact(models.Model):
     type            = models.PositiveIntegerField(choices=TYPES, default=0, null=False, db_index=True)
     status          = models.PositiveIntegerField(choices=STATUS, default=0, null=False, db_index=True)
     creation_date   = models.DateTimeField(default=timezone.now)
-    unit            = models.ForeignKey(TvStoreUnit, verbose_name=_('unit'), null=True)
-    user            = models.ForeignKey(User, verbose_name=_('user'), null=True)
+    unit            = models.ForeignKey(TvStoreUnit, verbose_name=_('unit'), null=True, on_delete=models.SET_NULL)
+    user            = models.ForeignKey(User, verbose_name=_('user'), null=True, on_delete=models.SET_NULL)
     unit_serial_nr  = models.CharField(verbose_name=_('unit_serial_nr'), max_length=200, unique=False, null=False, blank=False, default=DEFAULT_UNIT_SERIAL_NR)
     js_attributes   = models.TextField(_(u'js_attributes'), null=False, blank=True)
 
-@receiver(pre_save, sender=TvStoreContact)
+@receiver(models.signals.pre_save, sender=TvStoreContact)
 def pre_save_handler_contact(sender, instance=None, created=False, **kwargs):
 
     logging.warning("pre_save_handler_contact() instance:{}".format(instance))

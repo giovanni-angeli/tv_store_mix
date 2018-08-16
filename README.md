@@ -3,26 +3,28 @@ tv store server
 
 __________________
 
-```
-
-```
-
 
 ### To run:
 
-first time:
+## set up:
 
 ```
-# export the path to the py virtualenv you created via 'make create_venv'
+# set the path for your virtualenv
 export PATH_TO_VENV=/opt/venvs/dj_mix
-cd ./dj_mix/
+
+(virtualenv -p python3 $PATH_TO_VENV)
+(. $PATH_TO_VENV/bin/activate ; pip install --upgrade pip ; pip install wheel)
+
+# cd into the path of your clone of the repo
+cd ./tv_store_mix/
+
 (. $PATH_TO_VENV/bin/activate ; python ./web_app/manage.py makemigrations)
 (. $PATH_TO_VENV/bin/activate ; python ./web_app/manage.py migrate)
 (. $PATH_TO_VENV/bin/activate ; python ./web_app/manage.py createsuperuser)
 (. $PATH_TO_VENV/bin/activate ; python ./web_app/manage.py runserver localhost:8008)
 ```
 
-or simply:
+## to run:
 
 ```
 (. /opt/venvs/dj_mix/bin/activate ; python  ./web_app/manage.py runserver localhost:8008)
