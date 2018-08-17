@@ -121,8 +121,8 @@ REST_FRAMEWORK = {
 LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'Europe/Rome'
-with open('/etc/timezone') as f:
-    TIME_ZONE = f.read().strip()
+# ~ with open('/etc/timezone') as f:
+    # ~ TIME_ZONE = f.read().strip()
 
 USE_I18N = True
 
@@ -135,13 +135,13 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, "static_collected")
 
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "frontend", "static"),
     os.path.join(BASE_DIR, "static"),
 ]
 
-REDIS_URL = 'redis://localhost:6379/0'
+# ~ REDIS_URL = 'redis://localhost:6379/0'
 
 def ugettext_lazy(s):
     return s
