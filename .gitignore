@@ -2,3 +2,4 @@ web_app/conf
 stuff/
 *.pyc
 *__pycache__*
+*sqlite3
