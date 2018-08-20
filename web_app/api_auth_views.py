@@ -9,26 +9,36 @@ from django.shortcuts import get_object_or_404
 from django.http import (HttpResponseRedirect, HttpResponse, JsonResponse)
 from django.urls import reverse
 
+from django.contrib.auth.models import User
+
 from rest_framework import (viewsets, status)
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from orm.models import (TvStoreUnit, TvStoreContact, TvStoreUnitSerializer, TvStoreContactSerializer)
 
-class TvStoreContactList(APIView):
-    
-    queryset = TvStoreContact.objects.all()
+class TvStoreListViewBase(APIView):
+
+    serializer_class = None
 
     def get(self, request, format=None):
 
-        units_ = TvStoreContact.objects.filter(**request.query_params.dict())
-        data_ = TvStoreContactSerializer(units_, many=True).data
-        
+        qs = self.queryset
+        query_params_ = request.query_params.dict()
+
+        if not request.user.is_superuser:
+            query_params_['user'] = User.objects.all().filter(username=request.user)[0].id
+
+        objs_ = qs.filter(**query_params_)
+        data_ = self.serializer_class(objs_, many=True).data
         return JsonResponse(data_, safe=False)
 
     def post(self, request, format=None):
-        
-        serializer = TvStoreContactSerializer(data=request.data)
+
+        data_ = request.data.dict()
+        data_['user'] = User.objects.all().filter(username=request.user)[0].id
+
+        serializer = self.serializer_class(data=data_)
 
         r_ = None
         if serializer.is_valid():
@@ -37,46 +47,25 @@ class TvStoreContactList(APIView):
             except:
                 logging.error(traceback.format_exc())
                 r_ = None
-            
+
         if r_ is not None:    
-            
             ret_ = JsonResponse(serializer.data, status=status.HTTP_201_CREATED)
-        
         else:
-            
             ret_ = JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
         return ret_ 
 
-class TvStoreUnitList(APIView):
+
+class TvStoreContactList(TvStoreListViewBase):
+    
+    queryset = TvStoreContact.objects.all()
+    serializer_class = TvStoreContactSerializer
+
+class TvStoreUnitList(TvStoreListViewBase):
     
     queryset = TvStoreUnit.objects.all()
+    serializer_class = TvStoreUnitSerializer
     
-    def get(self, request, format=None):
-
-        units_ = TvStoreUnit.objects.filter(**request.query_params.dict())
-        data_ = TvStoreUnitSerializer(units_, many=True).data
-        
-        return JsonResponse(data_, safe=False)
-
-    def post(self, request, format=None):
-        
-        serializer = TvStoreUnitSerializer(data=request.data)
-
-        if serializer.is_valid():
-            
-            r_ = serializer.save()
-            
-            obj = TvStoreUnit.objects.get(id=r_.id)
-            
-            ret_ = JsonResponse(serializer.data, status=status.HTTP_201_CREATED)
-        
-        else:
-            
-            ret_ = JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
-        return ret_ 
-
 
 def main(request):
 
@@ -87,39 +76,3 @@ def main(request):
 
     return render(request, 'main.html', ctx_)
 
-"""
-
-class SnippetList(generics.ListCreateAPIView):
-    queryset = Snippet.objects.all()
-    serializer_class = SnippetSerializer
-
-
-class SnippetDetail(APIView):
-    
-    " Retrieve, update or delete a snippet instance. "
-    
-    def get_object(self, pk):
-        try:
-            return Snippet.objects.get(pk=pk)
-        except Snippet.DoesNotExist:
-            raise Http404
-
-    def get(self, request, pk, format=None):
-        snippet = self.get_object(pk)
-        serializer = SnippetSerializer(snippet)
-        return Response(serializer.data)
-
-    def put(self, request, pk, format=None):
-        snippet = self.get_object(pk)
-        serializer = SnippetSerializer(snippet, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def delete(self, request, pk, format=None):
-        snippet = self.get_object(pk)
-        snippet.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-        
-"""

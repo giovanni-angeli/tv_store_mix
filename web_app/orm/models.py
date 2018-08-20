@@ -33,7 +33,11 @@ class TvStoreUnit(models.Model):
     group           = models.ForeignKey(Group, verbose_name=_('group'), null=True, on_delete=models.SET_NULL)
     user            = models.ForeignKey(User,  verbose_name=_('user'),  null=True, on_delete=models.SET_NULL)
     js_attributes   = models.TextField(_(u'js_attributes'), null=False, blank=True)
-    
+
+    def user_name(self):
+        
+        if self.user:
+            return self.user.username
 
 class TvStoreContact(models.Model):
 
@@ -60,11 +64,16 @@ class TvStoreContact(models.Model):
     unit_serial_nr  = models.CharField(verbose_name=_('unit_serial_nr'), max_length=200, unique=False, null=False, blank=False, default=DEFAULT_UNIT_SERIAL_NR)
     js_attributes   = models.TextField(_(u'js_attributes'), null=False, blank=True)
 
+    def unit_name(self):
+        
+        return self.unit.name
+
 @receiver(models.signals.pre_save, sender=TvStoreContact)
 def pre_save_handler_contact(sender, instance=None, created=False, **kwargs):
 
     logging.warning("pre_save_handler_contact() instance:{}".format(instance))
     logging.warning("pre_save_handler_contact() instance.unit_serial_nr:{}".format(instance.unit_serial_nr))
+    logging.warning("pre_save_handler_contact() instance.user :{}".format(instance.user))
 
     try:
         obj = TvStoreContact.objects.get(id=instance.id)
@@ -72,10 +81,12 @@ def pre_save_handler_contact(sender, instance=None, created=False, **kwargs):
         obj = None
 
     if obj is None:
-        
+
         unit = TvStoreUnit.objects.get(serial_nr=instance.unit_serial_nr)
         instance.unit = unit
-        instance.user = unit.user
+        
+        if instance.user != unit.user:
+            obj = None
 
 
 class TvStoreUnitSerializer(serializers.ModelSerializer):
@@ -83,11 +94,11 @@ class TvStoreUnitSerializer(serializers.ModelSerializer):
     class Meta:
         model = TvStoreUnit
         fields = (
-            # ~ 'user', 
-            # ~ 'group', 
+            'user', 
             'name', 
             'ftp_url', 
-            'serial_nr'
+            'serial_nr',
+            'js_attributes', 
         )
         safe = False
 
@@ -96,11 +107,9 @@ class TvStoreContactSerializer(serializers.ModelSerializer):
     class Meta:
         model = TvStoreContact
         fields = (
-            'id', 
             'type', 
             'status', 
-            # ~ 'creation_date', 
-            # ~ 'user', 
+            'user', 
             'unit_serial_nr', 
             'js_attributes', 
         )

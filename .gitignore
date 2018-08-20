@@ -1,6 +1,7 @@
 web_app/conf
 stuff/
 *.pyc
-*__pycache__*
+*/__pycache__/*
+web_app/__pycache__
 *static_collected*
 *sqlite3
