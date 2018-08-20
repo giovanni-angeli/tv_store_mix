@@ -4,8 +4,6 @@ tv store server
 __________________
 
 
-### To run:
-
 ## set up:
 
 ```
