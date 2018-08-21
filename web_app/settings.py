@@ -13,9 +13,15 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 os.environ['PATH'] += ":{}".format(BASE_DIR)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# ~ DEBUG = True
 DEBUG = False
-
+try:
+    with open(os.path.join(BASE_DIR, 'conf', 'DEBUG')) as f:
+        DEBUG = int(f.read().strip())
+except:
+    DEBUG = False
+if DEBUG:
+    print("DEBUG:{}".format(DEBUG))    
+        
 # SECURITY WARNING: keep the secret key used in production secret!
 with open(os.path.join(BASE_DIR, 'conf', 'SECRET_KEY')) as f:
     SECRET_KEY = f.read().strip()
@@ -106,13 +112,15 @@ REST_FRAMEWORK = {
     # or allow read-only access for unauthenticated users.
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
-    ]
+    ],
 
     # ~ 'DEFAULT_AUTHENTICATION_CLASSES': (
         # ~ 'rest_framework.authentication.BasicAuthentication',
         # ~ 'rest_framework.authentication.SessionAuthentication',
     # ~ )
     
+    # ~ 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    # ~ 'PAGE_SIZE': 50,
 }
 
 # Internationalization

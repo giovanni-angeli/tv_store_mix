@@ -8,14 +8,13 @@ import datetime
 
 from django.db import models
 from django.utils import timezone
+from django.core.exceptions import PermissionDenied
 
 from django.contrib.auth.models import Group, User
 
 from django.dispatch import receiver
 from django.db.models.signals import pre_save
 from django.db import models
-
-from rest_framework import serializers 
 
 from settings import ugettext_lazy as _
 
@@ -71,9 +70,9 @@ class TvStoreContact(models.Model):
 @receiver(models.signals.pre_save, sender=TvStoreContact)
 def pre_save_handler_contact(sender, instance=None, created=False, **kwargs):
 
-    logging.warning("pre_save_handler_contact() instance:{}".format(instance))
-    logging.warning("pre_save_handler_contact() instance.unit_serial_nr:{}".format(instance.unit_serial_nr))
-    logging.warning("pre_save_handler_contact() instance.user :{}".format(instance.user))
+    # ~ logging.warning("pre_save_handler_contact() instance:{}".format(instance))
+    # ~ logging.warning("pre_save_handler_contact() instance.unit_serial_nr:{}".format(instance.unit_serial_nr))
+    # ~ logging.warning("pre_save_handler_contact() instance.user :{}".format(instance.user))
 
     try:
         obj = TvStoreContact.objects.get(id=instance.id)
@@ -86,33 +85,6 @@ def pre_save_handler_contact(sender, instance=None, created=False, **kwargs):
         instance.unit = unit
         
         if instance.user != unit.user:
-            obj = None
+            raise PermissionDenied("contact instance's user differs from the user the related unit belongs to.")
 
-
-class TvStoreUnitSerializer(serializers.ModelSerializer):
-    
-    class Meta:
-        model = TvStoreUnit
-        fields = (
-            'user', 
-            'name', 
-            'ftp_url', 
-            'serial_nr',
-            'js_attributes', 
-        )
-        safe = False
-
-class TvStoreContactSerializer(serializers.ModelSerializer):
-    
-    class Meta:
-        model = TvStoreContact
-        fields = (
-            'type', 
-            'status', 
-            'user', 
-            'unit_serial_nr', 
-            'js_attributes', 
-        )
-        safe = False
-        
 

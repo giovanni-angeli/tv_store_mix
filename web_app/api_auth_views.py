@@ -11,11 +11,41 @@ from django.urls import reverse
 
 from django.contrib.auth.models import User
 
+from django.core.paginator import Paginator
+
 from rest_framework import (viewsets, status)
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework import serializers 
 
-from orm.models import (TvStoreUnit, TvStoreContact, TvStoreUnitSerializer, TvStoreContactSerializer)
+from orm.models import (TvStoreUnit, TvStoreContact)
+
+class TvStoreUnitSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = TvStoreUnit
+        fields = (
+            'user', 
+            'name', 
+            'ftp_url', 
+            'serial_nr',
+            'js_attributes', 
+        )
+        safe = False
+
+class TvStoreContactSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = TvStoreContact
+        fields = (
+            'type', 
+            'status', 
+            'user', 
+            'unit_serial_nr', 
+            'js_attributes', 
+        )
+        safe = False
+
 
 class TvStoreListViewBase(APIView):
 
