@@ -10,8 +10,34 @@ import random
 import requests
 
 
-DEFAULT_BASE_SERVER_URL = 'http://localhost:8007'
-# ~ DEFAULT_BASE_SERVER_URL = 'http://metusco.pythonanywhere.com'
+# ~ DEFAULT_BASE_SERVER_URL = 'http://localhost:8007'
+DEFAULT_BASE_SERVER_URL = 'http://metusco.pythonanywhere.com'
+
+def _print_result(r, verbose=False):
+
+    print(" **** : {} {}".format(r.url, r.request), "r.status_code:{}".format(r.status_code))
+    
+    if verbose:
+        try:
+            r_json = r.json()
+            print("r_json:{}".format(r_json))
+            if isinstance(r_json, list):
+                print("js_attributes:")
+                pprint.pprint(json.loads(r_json[0]['js_attributes']))
+        except:
+            traceback.print_exc()
+            print(r.text)
+        print(".")
+
+
+def load_api_auth_credentials():
+
+    here = os.path.dirname(os.path.abspath(__file__))
+    with open(os.path.join(here, '..', 'web_app', 'conf', 'API_AUTH')) as f:
+        auths = [tuple(l.strip().split(' ')) for l in f.readlines()]
+
+    return auths
+
 
 
 class RestApiClient(object):
@@ -22,31 +48,15 @@ class RestApiClient(object):
         self.auth_credentials = auth # (usr, pwd)
         self.verbose = verbose
 
-    def _print_result(self, r):
-
-        print(" **** : {} {}".format(r.url, r.request), "r.status_code:{}".format(r.status_code))
-        
-        if self.verbose:
-            try:
-                r_json = r.json()
-                print("r_json:{}".format(r_json))
-                if isinstance(r_json, list):
-                    print("js_attributes:")
-                    pprint.pprint(json.loads(r_json[0]['js_attributes']))
-            except:
-                traceback.print_exc()
-                print(r.text)
-            print(".")
-
     def get_units(self, filter=None):
 
         r = requests.get('{}/api-auth/units/'.format(self.base_server_url), auth=self.auth_credentials, params=filter)
-        self._print_result(r)
+        _print_result(r, self.verbose)
 
     def get_contacts(self, filter=None):
 
         r = requests.get('{}/api-auth/contacts/'.format(self.base_server_url), auth=self.auth_credentials, params=filter)
-        self._print_result(r)
+        _print_result(r, self.verbose)
 
     def create_contact(self, type, status, unit_serial_nr, js_attributes):
 
@@ -57,7 +67,7 @@ class RestApiClient(object):
             'js_attributes': js_attributes,
         }
         r = requests.post('{}/api-auth/contacts/'.format(self.base_server_url), auth=self.auth_credentials, data=pars_)
-        self._print_result(r)
+        _print_result(r, self.verbose)
 
     def create_unit(self, name, serial_nr, ftp_url, user, js_attributes, group='generic'):
 
@@ -70,7 +80,7 @@ class RestApiClient(object):
             'js_attributes': js_attributes,
         }
         r = requests.post('{}/api-auth/units/'.format(self.base_server_url), auth=self.auth_credentials, data=pars_)
-        self._print_result(r)
+        _print_result(r, self.verbose)
 
     def test_call_sequence(self, unit_nr, n_of_contacts=5):
 
@@ -102,14 +112,6 @@ class RestApiClient(object):
         filter = {'serial_nr': "0000-000{}".format(unit_nr)}
         self.get_units(filter)
 
-
-def load_api_auth_credentials():
-
-    here = os.path.dirname(os.path.abspath(__file__))
-    with open(os.path.join(here, '..', 'web_app', 'conf', 'API_AUTH')) as f:
-        auths = [tuple(l.strip().split(' ')) for l in f.readlines()]
-
-    return auths
 
 def main():
 
