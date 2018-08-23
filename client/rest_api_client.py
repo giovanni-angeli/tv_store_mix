@@ -10,8 +10,8 @@ import random
 import requests
 
 
-# ~ DEFAULT_BASE_SERVER_URL = 'http://localhost:8007'
-DEFAULT_BASE_SERVER_URL = 'http://metusco.pythonanywhere.com'
+DEFAULT_BASE_SERVER_URL = 'http://localhost:8007'
+
 
 def _print_result(r, verbose=False):
 
