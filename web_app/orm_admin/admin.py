@@ -27,7 +27,7 @@ class TvStoreAdminBase(admin.ModelAdmin):
 @admin.register(TvStoreUnit)
 class TvStoreUnitAdmin(TvStoreAdminBase):
 
-    list_display = ('name', 'creation_date', 'expire_date', 'group', 'user_name')
+    list_display = ('name', 'creation_date', 'expire_date', 'group', 'user_name', 'serial_nr')
     # ~ readonly_fields = ('id', 'serial_nr', )
     readonly_fields = ('id', )
     
@@ -68,15 +68,17 @@ class TvStoreContactAdmin(TvStoreAdminBase):
         ('js_attributes section', {'fields': (('js_attributes', ))}),
     )
 
-    list_filter = ['status', 'type', 'unit_serial_nr']
+    list_filter = [
+        'status', 'type', 'unit_serial_nr', 
+    ]
     
     list_per_page = 50
     
     def show_unit(self, obj):
         
         return format_html(
-            '<a href="/admin/orm/tvstoreunit/{}/change/">{}</span>',
-            obj.unit.id, obj.unit_name()
+            '<a href="/admin/orm/tvstoreunit/{}/change/">{} [{}]</span>',
+            obj.unit.id, obj.unit_name(), obj.unit_serial_nr
         )
         
     show_unit.short_description = 'Unit'
